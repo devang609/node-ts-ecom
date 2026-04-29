@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",          
+    "outDir": "./dist",          
+
+    // Environment Settings
+    "module": "ESNext",          // Use ES Modules (import/export).
+    "target": "ESNext",          // Modern JavaScript (ESNext).
+    "types": [],                 // No global types, manually include types like @types/node if needed.
+
+    // For nodejs:
+    // "lib": ["esnext"],         // Include ESNext features like async/await and modern syntax.
+    // "types": ["node"],         // Uncomment for Node.js types.
+
+    // Other Outputs
+    "sourceMap": false,          
+    "declaration": false,        
+    "declarationMap": false,     
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,  
+    "exactOptionalPropertyTypes": true, 
+
+    // Recommended Options
+    "strict": true,               
+    "jsx": "react-jsx",           
+    "verbatimModuleSyntax": true,  
+    "isolatedModules": true,      
+    "noUncheckedSideEffectImports": true,  
+    "moduleDetection": "force",   
+    "skipLibCheck": true         
+  },
+  "include": ["src/**/*"],        
+  "exclude": ["node_modules", "dist"]
+}
