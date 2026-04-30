@@ -6,7 +6,28 @@ import {
 } from "../validations/auth.validations.ts";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError } from "../errors/BadRequestError.ts";
-import * as tokenService from "../services/token.service.ts";
+
+const getTokenFromRequest = (req: Request): string | undefined => {
+    const authHeader = req.headers.authorization;
+    if (typeof authHeader === "string") {
+        const match = authHeader.match(/^Bearer\s+(.+)$/i);
+        if (match?.[1]) return match[1].trim();
+    }
+
+    const bodyToken = (req.body as any)?.token;
+    if (typeof bodyToken === "string" && bodyToken.trim()) return bodyToken.trim();
+
+    return undefined;
+};
+
+const sendControllerError = (res: Response, caught: any) => {
+    const statusCode =
+        typeof caught?.statusCode === "number"
+            ? caught.statusCode
+            : StatusCodes.INTERNAL_SERVER_ERROR;
+    const message = typeof caught?.message === "string" ? caught.message : "Internal Server Error";
+    return res.status(statusCode).json({ message });
+};
 
 export const userLoginHandler = async (req: Request, res: Response) => {
     const { error } = loginValidationSchema.validate(req.body);
@@ -20,7 +41,7 @@ export const userLoginHandler = async (req: Request, res: Response) => {
         const token = await authService.login(email, password);
         return res.status(StatusCodes.OK).json({ token });
     } catch (caught: any) {
-        return res.status(caught.statusCode).json({ caught });
+        return sendControllerError(res, caught);
     }
 };
 
@@ -38,20 +59,31 @@ export const userSignupHandler = async (req: Request, res: Response) => {
             "email": createdUser.email
         });
     } catch (caught: any) {
-        return res.status(caught.statusCode).json({ caught });
+        return sendControllerError(res, caught);
     }
 };
 
 
 export const userLogoutHandler = async (req: Request, res: Response) => {
     try {
-        const { token } = req.body;
-        if (!token) throw new BadRequestError('access_token not found');
+        const token = getTokenFromRequest(req);
+        if (!token) throw new BadRequestError("access_token not found");
 
-        const jwtClaims = tokenService.tokenParser(token);
-
-
-    } catch (error) {
-
+        await authService.logout(token);
+        return res.status(StatusCodes.OK).json({ message: "Logged out" });
+    } catch (caught: any) {
+        return sendControllerError(res, caught);
     }
 }
+
+export const userTokenLogoutHandler = async (req: Request, res: Response) => {
+    try {
+        const { token } = req.body as { token?: string };
+        if (!token) throw new BadRequestError("access_token not found");
+
+        await authService.logout(token);
+        return res.status(StatusCodes.OK).json({ message: "Logged out" });
+    } catch (caught: any) {
+        return sendControllerError(res, caught);
+    }
+};

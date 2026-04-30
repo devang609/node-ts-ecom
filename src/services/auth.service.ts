@@ -3,8 +3,8 @@ import User from "../models/User.ts";
 import { UserNotFoundError } from "../errors/UserNotFoundError.ts";
 import { InvalidCredentialsError } from "../errors/InvalidCredentialsError.ts";
 import { EmailAlreadyExistsError } from "../errors/EmailAlreadyExistsError.ts";
-import jwt, { type JwtPayload } from "jsonwebtoken";
-import { date } from "joi";
+import jwt, { TokenExpiredError, type JwtPayload , JsonWebTokenError} from "jsonwebtoken";
+import { date, number } from "joi";
 import * as tokenService from '../services/token.service.ts'
 
 export const login = async (email: string, password: string) => {
@@ -52,10 +52,26 @@ export const signup = async (email: string, password: string) => {
 
 export const logout = async (token: string) => {
 
-  const claims: JwtPayload = tokenService.tokenParser(token);
+  const claims: JwtPayload = tokenService.getJwtClaims(token, { ignoreExpiration: true });
 
   const storedUser = await User.findByPk(claims.sub);
 
   if (!storedUser) throw new UserNotFoundError('User not found');
-  else await storedUser.update({ validAfter: new Date(Date.now()) });
+  else return await storedUser.update({ validAfter: new Date() });
+}
+
+export const tokenRefresh = async (jwtClaims: JwtPayload) => {
+  
+  const isExpired = jwtClaims.exp! * 1000 < Date.now();
+  if(isExpired) throw new TokenExpiredError('Token expired at: ', new Date(jwtClaims.exp!*1000));
+
+  const storedUser = await User.findByPk(jwtClaims.sub);
+  if(!storedUser) throw new JsonWebTokenError('Invalid Token: No such user exists.');
+
+  return jwt.sign(storedUser.email, process.env.JWT_SECRET!, {
+    expiresIn: jwtClaims.exp!,
+    issuer: jwtClaims.iss!,
+    algorithm: "HS256",
+    subject: jwtClaims.sub!,
+  });
 }
