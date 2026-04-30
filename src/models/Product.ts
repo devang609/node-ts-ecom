@@ -1,6 +1,6 @@
 import { Model, DataTypes, Sequelize } from "sequelize";
-import sequelize from "../configs/database"; // Your Sequelize instance
-import User from "./User"; // Import User model
+import sequelize from "../configs/database.ts"; // Your Sequelize instance
+import type User from "./User.ts"; // Import User type only
 
 interface ProductProperties {
   product_id: string;
@@ -13,13 +13,13 @@ interface ProductProperties {
 }
 
 class Product extends Model<ProductProperties> implements ProductProperties {
-  public product_id!: string;
-  public product_name!: string;
-  public brand_name!: string;
-  public category!: string;
-  public description!: string;
-  public price!: number;
-  public userId!: string; // Foreign key to associate with User
+  declare product_id: string;
+  declare product_name: string;
+  declare brand_name: string;
+  declare category: string;
+  declare description: string;
+  declare price: number;
+  declare userId: string; // Foreign key to associate with User
 }
 
 Product.init(
@@ -53,7 +53,7 @@ Product.init(
       type: DataTypes.UUID,
       references: {
         model: "users",  
-        key: "id",     
+        key: "user_id",     
       },
       allowNull: false,
     },
@@ -65,7 +65,5 @@ Product.init(
     timestamps: true,
   }
 );
-
-Product.belongsTo(User, { foreignKey: "userId" });
 
 export default Product;

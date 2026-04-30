@@ -1,10 +1,14 @@
+import { StatusCodes } from "http-status-codes";
+
 export class InvalidCredentialsError extends Error {
-  statusCode: number;
+  statusCode: StatusCodes;
+  message: string;
 
   constructor(message: string) {
-    super(message);  // Call the parent class constructor (Error)
-    this.name = 'InvalidCredentialsError';  // Set the name of the error
-    this.statusCode = 401;  // HTTP status code for unauthorized (invalid credentials)
-    Object.setPrototypeOf(this, new.target.prototype);  // Fix the prototype chain
+    super(message); 
+    this.message = message;
+    this.name = 'InvalidCredentialsError';  
+    this.statusCode = StatusCodes.UNAUTHORIZED;  
+    Object.setPrototypeOf(this, new.target.prototype);  
   }
 }

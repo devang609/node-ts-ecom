@@ -1,10 +1,14 @@
+import { StatusCodes } from "http-status-codes";
+
 export class EmailAlreadyExistsError extends Error {
-  statusCode: number;
+  statusCode: StatusCodes;
+  message: string;
 
   constructor(message: string) {
-    super(message);  // Call the parent class constructor (Error)
-    this.name = 'EmailAlreadyExistsError';  // Set the name of the error
-    this.statusCode = 409;  // HTTP status code for conflict (email already exists)
-    Object.setPrototypeOf(this, new.target.prototype);  // Fix the prototype chain
+    super(message);  
+    this.message = message;
+    this.name = 'EmailAlreadyExistsError';  
+    this.statusCode = StatusCodes.CONFLICT;  
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }

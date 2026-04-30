@@ -1,19 +1,27 @@
-import { Model, DataTypes, Sequelize } from "sequelize";
-import sequelize from "../configs/database"; // Your Sequelize instance
-import Product from "./Product"; // Import Product model
+import { Model, DataTypes } from "sequelize";
+import type { Optional } from "sequelize";
+import sequelize from "../configs/database.ts"; // Your Sequelize instance
+import type Product from "./Product.ts"; // Import Product type only
 
 interface UserProperties {
   user_id: string;
   email: string;
   password: string;
-  cart?: Product[]; 
+  cart?: Product[];
+  validAfter: Date;
 }
 
-class User extends Model<UserProperties> implements UserProperties {
-  public user_id!: string;
-  public email!: string;
-  public password!: string;
-  public cart!: Product[];
+type UserCreationAttributes = Optional<UserProperties, "user_id" | "cart">;
+
+class User
+  extends Model<UserProperties, UserCreationAttributes>
+  implements UserProperties
+{
+  declare user_id: string;
+  declare email: string;
+  declare password: string;
+  declare cart: Product[];
+  declare validAfter: Date;
 }
 
 User.init(
@@ -32,6 +40,10 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    validAfter: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    }
   },
   {
     sequelize,
@@ -40,7 +52,5 @@ User.init(
     timestamps: true,  
   }
 );
-
-User.hasMany(Product, { foreignKey: "userId", as: "cart" });
 
 export default User;

@@ -5,8 +5,10 @@
     "outDir": "./dist",          
 
     // Environment Settings
-    "module": "ESNext",          // Use ES Modules (import/export).
+    "module": "NodeNext",        // Node.js ESM-compatible module output.
     "target": "ESNext",          // Modern JavaScript (ESNext).
+    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
     "types": [],                 // No global types, manually include types like @types/node if needed.
 
     // For nodejs:
@@ -17,6 +19,8 @@
     "sourceMap": false,          
     "declaration": false,        
     "declarationMap": false,     
+    "noEmit": true,
+    "pretty": true,
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,  

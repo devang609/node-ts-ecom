@@ -1,14 +1,14 @@
 import { StatusCodes } from "http-status-codes";
 
-export class UserNotFoundError extends Error {
+export class BadRequestError extends Error {
   statusCode: StatusCodes;
   message: string;
 
   constructor(message: string) {
-    super(message);
-    this.message = message; 
-    this.name = 'UserNotFoundError';  
-    this.statusCode = StatusCodes.NOT_FOUND;
+    super(message);  
+    this.message = message;
+    this.name = 'BadRequestError';  
+    this.statusCode = StatusCodes.BAD_REQUEST;  
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
