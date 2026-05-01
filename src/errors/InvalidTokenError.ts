@@ -1,14 +1,12 @@
 import { StatusCodes } from "http-status-codes";
+import { AppError } from "./AppError.ts";
 
-export class InvalidTokenError extends Error {
-  statusCode: StatusCodes;
-  message: string;
-
-  constructor(message: string) {
-    super(message);  
-    this.message = message;
-    this.name = 'InvalidTokenError';  
-    this.statusCode = StatusCodes.UNAUTHORIZED;
-    Object.setPrototypeOf(this, new.target.prototype);
+export class InvalidTokenError extends AppError {
+  constructor(message: string, options?: { meta?: unknown; cause?: unknown }) {
+    super(message, StatusCodes.UNAUTHORIZED, {
+      name: "InvalidTokenError",
+      meta: options?.meta,
+      cause: options?.cause,
+    });
   }
 }

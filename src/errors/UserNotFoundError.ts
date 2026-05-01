@@ -1,14 +1,12 @@
 import { StatusCodes } from "http-status-codes";
+import { AppError } from "./AppError.ts";
 
-export class UserNotFoundError extends Error {
-  statusCode: StatusCodes;
-  message: string;
-
-  constructor(message: string) {
-    super(message);
-    this.message = message; 
-    this.name = 'UserNotFoundError';  
-    this.statusCode = StatusCodes.NOT_FOUND;
-    Object.setPrototypeOf(this, new.target.prototype);
+export class UserNotFoundError extends AppError {
+  constructor(message: string, options?: { meta?: unknown; cause?: unknown }) {
+    super(message, StatusCodes.NOT_FOUND, {
+      name: "UserNotFoundError",
+      meta: options?.meta,
+      cause: options?.cause,
+    });
   }
 }

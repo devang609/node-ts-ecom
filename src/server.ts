@@ -4,6 +4,8 @@ import authRoutes from "./routes/auth.routes.ts";
 import "./models/associations.ts";
 import sequelize from "./configs/database.ts";
 import { env } from "./configs/env.ts";
+import { GlobalErrorHandler } from "./utils/AsyncErrorHandler.ts";
+import { StatusCodes } from "http-status-codes";
 
 dotenv.config();
 
@@ -24,6 +26,12 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 // app.use(`/user`, userRoutes);
+
+app.use((req, res) => {
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Not Found" });
+});
+
+app.use(GlobalErrorHandler);
 
 app.listen(PORT, () => {
     console.log(`Server running on: ${PORT}`);
