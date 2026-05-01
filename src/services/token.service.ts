@@ -1,5 +1,6 @@
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { InvalidTokenError } from "../errors/InvalidTokenError.ts";
+import { env } from "../configs/env.ts";
 
 const JWT_ISSUER = "Devang Sharma";
 
@@ -12,7 +13,7 @@ export const getJwtClaims = (
   }
 
   try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET!, {
+    const verified = jwt.verify(token, env.jwt.secret, {
       algorithms: ["HS256"],
       issuer: JWT_ISSUER,
       ignoreExpiration: options?.ignoreExpiration ?? false,

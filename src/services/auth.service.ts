@@ -6,6 +6,7 @@ import { EmailAlreadyExistsError } from "../errors/EmailAlreadyExistsError.ts";
 import jwt, { TokenExpiredError, type JwtPayload , JsonWebTokenError} from "jsonwebtoken";
 import { date, number } from "joi";
 import * as tokenService from '../services/token.service.ts'
+import { env } from "../configs/env.ts";
 
 export const login = async (email: string, password: string) => {
 
@@ -23,7 +24,7 @@ export const login = async (email: string, password: string) => {
     email: storedUser.email,
   };
 
-  const token = jwt.sign(payload, process.env.JWT_SECRET!, {
+  const token = jwt.sign(payload, env.jwt.secret, {
     expiresIn: "30m",
     issuer: "Devang Sharma",
     algorithm: "HS256",
@@ -68,7 +69,7 @@ export const tokenRefresh = async (jwtClaims: JwtPayload) => {
   const storedUser = await User.findByPk(jwtClaims.sub);
   if(!storedUser) throw new JsonWebTokenError('Invalid Token: No such user exists.');
 
-  return jwt.sign(storedUser.email, process.env.JWT_SECRET!, {
+  return jwt.sign(storedUser.email, env.jwt.secret, {
     expiresIn: jwtClaims.exp!,
     issuer: jwtClaims.iss!,
     algorithm: "HS256",

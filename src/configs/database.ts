@@ -1,26 +1,20 @@
-import config from 'dotenv/config.js';
-import { Sequelize } from 'sequelize';
-import type { Options } from "sequelize";
+import { Sequelize } from "sequelize";
+import { env } from "./env.js";
 
-const rawHost = process.env.PG_HOST ?? "";
-const requiresSsl =
-  rawHost.includes("sslmode=require") || process.env.PG_SSLMODE === "require";
-const host = rawHost.split("?")[0] ?? rawHost;
-const port = process.env.PG_PORT ? Number.parseInt(process.env.PG_PORT, 10) : undefined;
-
-const sequelizeOptions: Options = {
+const sequelize = new Sequelize(env.db.name, env.db.user, env.db.password, {
   dialect: "postgres",
-  host,
-  database: process.env.PG_DB as string,
-  username: process.env.PG_USER as string,
-  password: process.env.PG_PASSWORD as string,
+  host: env.db.host,
+  port: env.db.port,
   logging: true,
-  ...(port !== undefined && Number.isFinite(port) ? { port } : {}),
-  ...(requiresSsl
-    ? { dialectOptions: { ssl: { require: true, rejectUnauthorized: false } } }
-    : {}),
-};
 
-const sequelize = new Sequelize(sequelizeOptions);
+  ...(env.db.ssl && {
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
+  }),
+});
 
 export default sequelize;

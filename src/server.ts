@@ -3,10 +3,11 @@ import express from "express";
 import authRoutes from "./routes/auth.routes.ts";
 import "./models/associations.ts";
 import sequelize from "./configs/database.ts";
+import { env } from "./configs/env.ts";
 
 dotenv.config();
 
-const PORT = process.env.PORT;
+const PORT = env.db.port;
 
 const app = express();
 
