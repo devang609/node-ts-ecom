@@ -1,7 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import type { Optional } from "sequelize";
-import sequelize from "../configs/database.ts"; // Your Sequelize instance
-import type Product from "./Product.ts"; // Import Product type only
+import sequelize from "../configs/database.ts"; 
+import type Product from "./Product.ts";
 
 interface UserProperties {
   user_id: string;

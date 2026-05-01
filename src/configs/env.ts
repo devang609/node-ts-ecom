@@ -1,4 +1,9 @@
 import Joi from "joi";
+import config from "dotenv/config.js";
+import path from "node:path";
+
+
+// config({ path: path.resolve(process.cwd(), ".env") });
 
 const schema = Joi.object({
   PORT: Joi.number().default(3000),

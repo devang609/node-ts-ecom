@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import { env } from "./env.js";
+import { env } from "./env.ts";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.password, {
   dialect: "postgres",

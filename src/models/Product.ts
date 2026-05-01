@@ -9,7 +9,7 @@ interface ProductProperties {
   category: string;
   description: string;
   price: number;
-  userId: string; // Foreign key to associate a product with a user
+  userId: string;
 }
 
 class Product extends Model<ProductProperties> implements ProductProperties {
@@ -19,14 +19,14 @@ class Product extends Model<ProductProperties> implements ProductProperties {
   declare category: string;
   declare description: string;
   declare price: number;
-  declare userId: string; // Foreign key to associate with User
+  declare userId: string;
 }
 
 Product.init(
   {
     product_id: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,  // Generate a UUID for each product
+      defaultValue: DataTypes.UUIDV4,  
       primaryKey: true,
     },
     product_name: {
@@ -55,7 +55,7 @@ Product.init(
         model: "users",  
         key: "user_id",     
       },
-      allowNull: false,
+      allowNull: true,
     },
   },
   {

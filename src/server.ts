@@ -7,11 +7,11 @@ import { env } from "./configs/env.ts";
 
 dotenv.config();
 
-const PORT = env.db.port;
+const PORT = env.port;
 
 const app = express();
 
-// sequelize.sync({ alter: true })  // Use alter: true for auto-alter without dropping tables
+// sequelize.sync({ alter: true })
 //     .then(() => {
 //         console.log('Database synced successfully');
 //     })
