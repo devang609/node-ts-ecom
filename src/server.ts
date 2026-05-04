@@ -5,9 +5,10 @@ import { logger } from './utils/logger';
 import { syncDatabase } from './models';
 
 async function startServer(): Promise<void> {
-  // Connect to DB before accepting any traffic
+
   await connectDatabase();
   await syncDatabase();
+
 
   const server = app.listen(ENV.PORT, () => {
     logger.info(`FlipMart server running on port ${ENV.PORT} [${ENV.NODE_ENV}]`);

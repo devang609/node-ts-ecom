@@ -2,27 +2,60 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Fail fast on startup if any required env var is missing.
-// This prevents subtle runtime errors caused by undefined configs.
+type DurationString = `${number}${'m' | 'h' | 'd'}`;
+
 function requireEnv(key: string): string {
   const value = process.env[key];
+
   if (!value) {
     throw new Error(`Missing required environment variable: ${key}`);
   }
+
   return value;
 }
 
 function requireEnvInt(key: string): number {
   const value = requireEnv(key);
-  const parsed = parseInt(value, 10);
-  if (isNaN(parsed)) {
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsed)) {
     throw new Error(`Environment variable ${key} must be an integer, got: "${value}"`);
   }
+
   return parsed;
 }
 
+function requireEnvEnum<T extends readonly string[]>(
+  key: string,
+  allowedValues: T
+): T[number] {
+  const value = requireEnv(key);
+
+  if (!allowedValues.includes(value)) {
+    throw new Error(
+      `Environment variable ${key} must be one of: ${allowedValues.join(', ')}. Got: "${value}"`
+    );
+  }
+
+  return value as T[number];
+}
+
+function requireEnvDuration(key: string): DurationString {
+  const value = requireEnv(key);
+
+  if (!/^\d+(ms|s|m|h|d|w|y)$/.test(value)) {
+    throw new Error(
+      `Environment variable ${key} must be a valid duration, e.g. "15m", "1h", or "7d". Got: "${value}"`
+    );
+  }
+
+  return value as DurationString;
+}
+
+const NODE_ENV_VALUES = ['development', 'production', 'test'] as const;
+
 export const ENV = {
-  NODE_ENV: requireEnv('NODE_ENV') as 'development' | 'production' | 'test',
+  NODE_ENV: requireEnvEnum('NODE_ENV', NODE_ENV_VALUES),
   PORT: requireEnvInt('PORT'),
 
   DB: {
@@ -34,11 +67,10 @@ export const ENV = {
   },
 
   JWT: {
-    // Restore actual newlines from the single-line env format
     PRIVATE_KEY: requireEnv('JWT_PRIVATE_KEY').replace(/\\n/g, '\n'),
     PUBLIC_KEY: requireEnv('JWT_PUBLIC_KEY').replace(/\\n/g, '\n'),
-    ACCESS_TOKEN_EXPIRY: requireEnv('JWT_ACCESS_TOKEN_EXPIRY'),
-    REFRESH_TOKEN_EXPIRY: requireEnv('JWT_REFRESH_TOKEN_EXPIRY'),
+    ACCESS_TOKEN_EXPIRY: requireEnvDuration('JWT_ACCESS_TOKEN_EXPIRY'),
+    REFRESH_TOKEN_EXPIRY: requireEnvDuration('JWT_REFRESH_TOKEN_EXPIRY'),
     ISSUER: requireEnv('JWT_ISSUER'),
     AUDIENCE: requireEnv('JWT_AUDIENCE'),
   },
