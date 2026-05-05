@@ -35,6 +35,44 @@ export function buildOpenApiSpec(): OpenAPIV3.Document {
           },
           required: ['userId', 'role']
         },
+        User: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            email: { type: 'string', format: 'email' },
+            role: { type: 'string', enum: ['BUYER', 'SELLER', 'ADMIN'] },
+            validAfter: { type: 'string', format: 'date-time' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          },
+          required: ['id', 'email', 'role', 'validAfter', 'createdAt', 'updatedAt']
+        },
+        PaginatedUsers: {
+          type: 'object',
+          properties: {
+            items: { type: 'array', items: { $ref: '#/components/schemas/User' } },
+            page: { type: 'integer', minimum: 1 },
+            limit: { type: 'integer', minimum: 1 },
+            total: { type: 'integer', minimum: 0 }
+          },
+          required: ['items', 'page', 'limit', 'total']
+        },
+        UserCreateRequest: {
+          type: 'object',
+          properties: {
+            email: { type: 'string', format: 'email' },
+            password: { type: 'string', format: 'password' }
+          },
+          required: ['email', 'password']
+        },
+        UserUpdateRequest: {
+          type: 'object',
+          properties: {
+            email: { type: 'string', format: 'email' },
+            password: { type: 'string', format: 'password' },
+            role: { type: 'string', enum: ['BUYER', 'SELLER'] }
+          }
+        },
         OkResponse: {
           type: 'object',
           properties: {
@@ -439,8 +477,113 @@ export function buildOpenApiSpec(): OpenAPIV3.Document {
             }
           }
         }
+      },
+      '/users': {
+        get: {
+          summary: 'List users (ADMIN-only; includes ADMIN users)',
+          tags: ['users'],
+          security: [{ accessTokenCookie: [] }],
+          parameters: [
+            { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
+            { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } },
+            { name: 'sortBy', in: 'query', schema: { type: 'string', example: 'createdAt:desc' } },
+            { name: 'role', in: 'query', schema: { type: 'string', enum: ['BUYER', 'SELLER', 'ADMIN'] } },
+            { name: 'email', in: 'query', schema: { type: 'string', format: 'email' } }
+          ],
+          responses: {
+            '200': {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/PaginatedUsers' }
+                }
+              }
+            }
+          }
+        },
+        post: {
+          summary: 'Create a BUYER user (ADMIN-only)',
+          tags: ['users'],
+          security: [{ accessTokenCookie: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UserCreateRequest' }
+              }
+            }
+          },
+          responses: {
+            '201': {
+              description: 'Created',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/User' }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/users/{userId}': {
+        get: {
+          summary: 'Get a user by id (ADMIN-only; includes ADMIN users)',
+          tags: ['users'],
+          security: [{ accessTokenCookie: [] }],
+          parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+          responses: {
+            '200': {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/User' }
+                }
+              }
+            }
+          }
+        },
+        patch: {
+          summary: 'Update user (ADMIN-only; role supports BUYER<->SELLER; cannot modify ADMIN users)',
+          tags: ['users'],
+          security: [{ accessTokenCookie: [] }],
+          parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UserUpdateRequest' }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/User' }
+                }
+              }
+            }
+          }
+        },
+        delete: {
+          summary: 'Hard-delete user (ADMIN-only; cannot delete ADMIN users)',
+          tags: ['users'],
+          security: [{ accessTokenCookie: [] }],
+          parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+          responses: {
+            '200': {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/OkResponse' }
+                }
+              }
+            }
+          }
+        }
       }
     },
-    tags: [{ name: 'meta' }, { name: 'auth' }, { name: 'product' }, { name: 'cart' }, { name: 'checkout' }]
+    tags: [{ name: 'meta' }, { name: 'auth' }, { name: 'product' }, { name: 'cart' }, { name: 'checkout' }, { name: 'users' }]
   };
 }
