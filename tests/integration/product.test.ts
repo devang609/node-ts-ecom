@@ -3,7 +3,6 @@ import request from 'supertest';
 import { createApp } from '../../src/app.js';
 import { createUser } from '../../src/services/user.service.js';
 import { setupTestDb } from '../utils/setupTestDb.js';
-import { describe, it } from 'node:test';
 
 setupTestDb();
 
@@ -98,8 +97,3 @@ describe('Products', () => {
     });
   });
 });
-
-function expect(status: number) {
-  throw new Error('Function not implemented.');
-}
-

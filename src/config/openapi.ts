@@ -91,6 +91,41 @@ export function buildOpenApiSpec(): OpenAPIV3.Document {
             total: { type: 'integer', minimum: 0 }
           },
           required: ['items', 'page', 'limit', 'total']
+        },
+        CartUpsertRequest: {
+          type: 'object',
+          properties: {
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  productId: { type: 'string', format: 'uuid' },
+                  quantity: { type: 'integer', minimum: 1 }
+                },
+                required: ['productId', 'quantity']
+              },
+              minItems: 1
+            }
+          },
+          required: ['items']
+        },
+        CartItemWithProduct: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            productId: { type: 'string', format: 'uuid' },
+            quantity: { type: 'integer', minimum: 1 },
+            product: { $ref: '#/components/schemas/Product' }
+          },
+          required: ['id', 'productId', 'quantity', 'product']
+        },
+        CartGetResponse: {
+          type: 'object',
+          properties: {
+            items: { type: 'array', items: { $ref: '#/components/schemas/CartItemWithProduct' } }
+          },
+          required: ['items']
         }
       }
     },
@@ -314,8 +349,48 @@ export function buildOpenApiSpec(): OpenAPIV3.Document {
             }
           }
         }
+      },
+      '/cart': {
+        get: {
+          summary: 'Get the authenticated buyer cart',
+          tags: ['cart'],
+          security: [{ accessTokenCookie: [] }],
+          responses: {
+            '200': {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/CartGetResponse' }
+                }
+              }
+            }
+          }
+        },
+        post: {
+          summary: 'Upsert cart items (quantity-based) for authenticated buyer',
+          tags: ['cart'],
+          security: [{ accessTokenCookie: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/CartUpsertRequest' }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/OkResponse' }
+                }
+              }
+            }
+          }
+        }
       }
     },
-    tags: [{ name: 'meta' }, { name: 'auth' }, { name: 'product' }]
+    tags: [{ name: 'meta' }, { name: 'auth' }, { name: 'product' }, { name: 'cart' }]
   };
 }
