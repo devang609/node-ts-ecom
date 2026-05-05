@@ -126,6 +126,31 @@ export function buildOpenApiSpec(): OpenAPIV3.Document {
             items: { type: 'array', items: { $ref: '#/components/schemas/CartItemWithProduct' } }
           },
           required: ['items']
+        },
+        BuyRequest: {
+          type: 'object',
+          properties: {
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  productId: { type: 'string', format: 'uuid' },
+                  quantity: { type: 'integer', minimum: 1 }
+                },
+                required: ['productId', 'quantity']
+              },
+              minItems: 1
+            }
+          },
+          required: ['items']
+        },
+        BuyResponse: {
+          type: 'object',
+          properties: {
+            orderId: { type: 'string', format: 'uuid' }
+          },
+          required: ['orderId']
         }
       }
     },
@@ -389,8 +414,33 @@ export function buildOpenApiSpec(): OpenAPIV3.Document {
             }
           }
         }
+      },
+      '/buy': {
+        post: {
+          summary: 'Checkout (creates order and decrements stock)',
+          tags: ['checkout'],
+          security: [{ accessTokenCookie: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BuyRequest' }
+              }
+            }
+          },
+          responses: {
+            '201': {
+              description: 'Created',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/BuyResponse' }
+                }
+              }
+            }
+          }
+        }
       }
     },
-    tags: [{ name: 'meta' }, { name: 'auth' }, { name: 'product' }, { name: 'cart' }]
+    tags: [{ name: 'meta' }, { name: 'auth' }, { name: 'product' }, { name: 'cart' }, { name: 'checkout' }]
   };
 }
