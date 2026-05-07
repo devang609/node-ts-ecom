@@ -20,7 +20,13 @@ export function createApp() {
   app.use(routes);
 
   if (config.swaggerEnabled) {
-    app.use('/docs', swaggerUi.serve, swaggerUi.setup(buildOpenApiSpec()));
+    const openApiSpec = buildOpenApiSpec();
+
+    app.get('/api/docs', (_req, res) => {
+      res.type('application/json').send(openApiSpec);
+    });
+
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
   }
 
   app.use(errorConverter);
@@ -28,4 +34,3 @@ export function createApp() {
 
   return app;
 }
-

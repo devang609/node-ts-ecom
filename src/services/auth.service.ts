@@ -58,7 +58,8 @@ export async function refresh(
   }
 
   const issuedAtMs = claims.iat * 1000;
-  if (issuedAtMs < user.validAfter.getTime()) {
+  const validAfterMs = user.validAfter.getTime();
+  if (issuedAtMs + 999 < validAfterMs) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid refresh token');
   }
 
@@ -81,4 +82,3 @@ export async function logoutAll(userId: string): Promise<void> {
   await setUserValidAfter(userId, now);
   await revokeAllUserSessions(userId);
 }
-

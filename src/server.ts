@@ -4,6 +4,7 @@ import { config } from './config/config.js';
 import { logger } from './config/logger.js';
 import { createApp } from './app.js';
 import { closeDb, initDb } from './db/init.js';
+import { attachWsServer, closeWsServer } from './realtime/ws.js';
 
 let isShuttingDown = false;
 let server: http.Server | undefined;
@@ -20,6 +21,12 @@ async function shutdown(reason: string) {
     await closeDb();
   } catch (err) {
     logger.error('Failed to close DB', { error: err });
+  }
+
+  try {
+    closeWsServer();
+  } catch (err) {
+    logger.error('Failed to close WebSocket server', { error: err });
   }
 
   if (server) {
@@ -44,6 +51,7 @@ async function main() {
 
   const app = createApp();
   server = http.createServer(app);
+  attachWsServer(server);
 
   server.listen(config.port, () => {
     logger.info('Server started', { port: config.port, env: config.env });

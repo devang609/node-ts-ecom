@@ -14,7 +14,7 @@ const envSchema = Joi.object({
   DATABASE_URL: Joi.when('NODE_ENV', {
     is: 'test',
     then: Joi.string().optional(),
-    otherwise: Joi.string().uri({ scheme: [/^postgres(?:ql)?$/] }).required()
+    otherwise: Joi.string().required()
   }),
   DB_SSL: Joi.boolean().truthy('true').falsy('false').default(false),
 

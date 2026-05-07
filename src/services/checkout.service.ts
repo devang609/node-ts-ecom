@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import { ApiError } from '../utils/ApiError.js';
 import { CartItem, Order, OrderItem, Product } from '../models/index.js';
 import { sequelize } from '../db/sequelize.js';
+import { publishInventoryUpdated } from '../realtime/inventoryEvents.js';
 
 export async function checkout(params: {
   userId: string;
@@ -16,7 +17,10 @@ export async function checkout(params: {
 
   const uniqueProductIds = Array.from(new Set(items.map((i) => i.productId))).sort();
 
-  return sequelize.transaction(async (transaction) => {
+  const result = await sequelize.transaction(async (transaction): Promise<{
+    orderId: string;
+    inventoryUpdates: { productId: string; stockQuantity: number }[];
+  }> => {
     const products = await Product.findAll({
       where: { id: { [Op.in]: uniqueProductIds } },
       transaction,
@@ -88,7 +92,15 @@ export async function checkout(params: {
       transaction
     });
 
-    return { orderId: order.id };
+    return {
+      orderId: order.id,
+      inventoryUpdates: products.map((p) => ({ productId: p.id, stockQuantity: p.stockQuantity }))
+    };
   });
-}
 
+  for (const update of result.inventoryUpdates) {
+    publishInventoryUpdated({ productId: update.productId, stockQuantity: update.stockQuantity });
+  }
+
+  return { orderId: result.orderId };
+}

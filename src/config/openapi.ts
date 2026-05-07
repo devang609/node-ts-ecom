@@ -214,8 +214,23 @@ export function buildOpenApiSpec(): OpenAPIV3.Document {
             }
           }
         }
-      }
-      ,
+      },
+      '/api/docs': {
+        get: {
+          summary: 'Get OpenAPI JSON spec',
+          tags: ['meta'],
+          responses: {
+            '200': {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: { type: 'object', additionalProperties: true }
+                }
+              }
+            }
+          }
+        }
+      },
       '/auth/register': {
         post: {
           summary: 'Register (creates BUYER) and sets auth cookies',

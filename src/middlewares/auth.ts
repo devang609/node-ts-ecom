@@ -26,7 +26,8 @@ export function auth(allowedRoles: Role[]) {
     }
 
     const issuedAtMs = claims.iat * 1000;
-    if (issuedAtMs < user.validAfter.getTime()) {
+    const validAfterMs = user.validAfter.getTime();
+    if (issuedAtMs + 999 < validAfterMs) {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'Authentication required');
     }
 
@@ -38,4 +39,3 @@ export function auth(allowedRoles: Role[]) {
     next();
   });
 }
-

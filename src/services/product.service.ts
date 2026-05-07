@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import { ApiError } from '../utils/ApiError.js';
 import { Product } from '../models/index.js';
 import type { Role } from '../constants/roles.js';
+import { publishInventoryCreated, publishInventoryDeleted, publishInventoryUpdated } from '../realtime/inventoryEvents.js';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -85,7 +86,7 @@ export async function createProduct(params: {
 }): Promise<Product> {
   const effectiveSellerId = params.actorRole === 'ADMIN' && params.sellerId ? params.sellerId : params.actorUserId;
 
-  return Product.create({
+  const product = await Product.create({
     sellerId: effectiveSellerId,
     name: params.name,
     category: params.category,
@@ -94,6 +95,9 @@ export async function createProduct(params: {
     priceCents: params.priceCents,
     stockQuantity: params.stockQuantity
   });
+
+  publishInventoryCreated({ productId: product.id, stockQuantity: product.stockQuantity });
+  return product;
 }
 
 export async function updateProduct(params: {
@@ -120,6 +124,10 @@ export async function updateProduct(params: {
 
   Object.assign(product, params.update);
   await product.save();
+
+  if (typeof params.update.stockQuantity !== 'undefined') {
+    publishInventoryUpdated({ productId: product.id, stockQuantity: product.stockQuantity });
+  }
   return product;
 }
 
@@ -134,6 +142,7 @@ export async function deleteProduct(params: { actorUserId: string; actorRole: Ro
   }
 
   await Product.destroy({ where: { id: product.id } });
+  publishInventoryDeleted({ productId: product.id });
 }
 
 export async function assertProductsExist(productIds: string[]): Promise<void> {
@@ -144,4 +153,3 @@ export async function assertProductsExist(productIds: string[]): Promise<void> {
     throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
   }
 }
-

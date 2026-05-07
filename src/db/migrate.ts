@@ -1,5 +1,10 @@
 import { sequelize } from './sequelize.js';
 import { umzug } from './umzug.js';
+import { config } from '../config/config.js';
+
+if (config.env === 'test') {
+  throw new Error('Migrations are not supported in test environment (pg-mem). Use sequelize.sync({ force: true }).');
+}
 
 await sequelize.authenticate();
 
@@ -12,4 +17,3 @@ if (direction === 'down') {
 }
 
 await sequelize.close();
-
